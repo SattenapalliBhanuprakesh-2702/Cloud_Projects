@@ -189,3 +189,41 @@ To achieve true system elasticity and ensure our web application tier is highly 
 3. **True Network Isolation:** The instance fleet dashboard confirms that these compute servers have no public IP addresses or public DNS endpoints assigned. They are fully secured behind our private subnet tier, relying strictly on our NAT Gateways for egress patch management and looking ahead to receive user traffic solely via the Application Load Balancer.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
+
+### 8. Routing Ingress, Target Groups, & Application Load Balancer (ALB) Deployment
+To bridge external public consumer requests with our isolated private application compute tier, I deployed an AWS Application Load Balancer (ALB) and established an intelligent reverse-proxy routing topology.
+
+#### A. Secure In-VPC Administrative Access (`Bastion/Jump-Box Session`)
+* **Operation Verified:** Internal network routing verification via SSH.
+* **Execution Strategy:** Using a secure bastion terminal context within the VPC, I validated cryptographic authentication (`aws-prod-key-pair.pem`) into the private host IP space (`10.0.12.207`), confirming internal network reachability while retaining zero public surface access.
+
+![Internal VPC Network Verification via SSH](images/bastion-ssh.png)
+
+#### B. Logical Application Grouping (`Target Group Configuration`)
+* **Target Group Name:** `aws-prod-tg`
+* **Target Type:** `Instance` (Decoupled mapping to auto-scaling EC2 computational units).
+* **Protocol & Port:** `HTTP : 8000` (Directing ingress application traffic to the backend runtime web server process port).
+* **VPC Workspace Association:** Map-restricted to `Prod-VPC` (`vpc-018e4178356e21c7`).
+* **Registered Target Threshold:** 2 Instances recognized.
+
+![Target Group Routing Metric Configuration](images/target-group.png)
+
+#### C. Highly Available Application Ingress (`Application Load Balancer`)
+* **Load Balancer Name:** `aws-prod-lb`
+* **Scheme Type:** `Internet-facing` (Allocating an external endpoint to capture customer traffic).
+* **Availability Zone Mapping:** Distributed across public boundary subnets `subnet-07192e179b75c499c` (`us-east-1b`) and `subnet-04e075486b3671cd8` (`us-east-1a`) to preserve multi-datacenter ingress resilience.
+* **Canonical DNS Endpoint:** `aws-prod-lb-243476059.us-east-1.elb.amazonaws.com`
+
+![Application Load Balancer Provisioning](images/load-balancer.png)
+
+#### D. Production Ingress Validation (`End-to-End Traffic Verification`)
+* **Endpoint Verified:** Public HTTP Request hitting the ALB canonical DNS.
+* **Dynamic Routing Confirmation:** The ALB successfully intercepted the request at the public boundary, assessed health metrics from `aws-prod-tg`, cross-referenced security parameters, and cleanly proxied the execution layer backward into the private subnet pool, landing securely on **Node-02B (Secondary)** inside Availability Zone B.
+
+![Production Load Balancing Verification](images/web-verification.png)
+
+---
+
+### 🏆 Final Architecture Success Metrics
+1. **Decoupled Architecture Tiers:** Users interact solely with the public-facing `aws-prod-lb` DNS endpoint. The backend applications remain entirely anonymous, shielded inside the private subnet layers without any exposed public IPs.
+2. **Zone Resiliency (Multi-AZ HA):** The infrastructure handles automatic failovers natively. If Availability Zone A undergoes an outage, the ALB automatically shifts traffic paths entirely to healthy target resources inside Availability Zone B, achieving a highly resilient, enterprise-grade production environment.
