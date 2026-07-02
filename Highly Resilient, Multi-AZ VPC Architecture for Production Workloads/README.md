@@ -84,3 +84,23 @@ To allow bi-directional internet communication for public-facing edge components
 The Internet Gateway serves as a highly available, horizontally scaled, and redundant entry/exit point for our VPC network. It functions as a target in our public route tables, allowing public resources to map their public IPv4 addresses to AWS network interface cards seamlessly, while performing necessary network address translation (NAT) safely at the cloud boundary.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
+
+### 4. Redundant NAT Gateway Provisioning (High Availability Egress)
+To guarantee high availability and eliminate cross-AZ data dependency dependencies, I provisioned two separate, highly available managed NAT Gateways, distributing them symmetrically across the public ingress tiers.
+
+* **Availability Zone A Ingress:**
+  * **Resource Name:** `NAT-GW-AZ-A`
+  * **ID:** `nat-0f87fad6839f087ac`
+  * **Subnet Location:** `public-subnet-1a` (`subnet-04e075486b3671cd8`)
+* **Availability Zone B Ingress:**
+  * **Resource Name:** `NAT-GW-AZ-B`
+  * **ID:** `nat-0a7ef701f461e0a7e`
+  * **Subnet Location:** `public-subnet-1b` (`subnet-07192e179b75c499c`)
+
+![NAT Gateway AZ-A Configuration](images/nat-gw-az-a.png)
+![NAT Gateway AZ-B Configuration](images/nat-gw-az-b.png)
+
+**Architectural Value:**
+By placing a dedicated NAT Gateway in each individual Availability Zone, I ensured that outbound traffic from `private-subnet-1a` remains entirely within AZ-A, and traffic from `private-subnet-1b` remains inside AZ-B. This design isolates zone failures and completely avoids cross-AZ data transfer fees for normal internet-bound workloads.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
