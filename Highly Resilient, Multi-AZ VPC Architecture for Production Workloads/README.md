@@ -104,3 +104,44 @@ To guarantee high availability and eliminate cross-AZ data dependency dependenci
 By placing a dedicated NAT Gateway in each individual Availability Zone, I ensured that outbound traffic from `private-subnet-1a` remains entirely within AZ-A, and traffic from `private-subnet-1b` remains inside AZ-B. This design isolates zone failures and completely avoids cross-AZ data transfer fees for normal internet-bound workloads.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
+
+### 5. Advanced Custom Route Table Implementation & Subnet Associations
+To orchestrate and enforce strict deterministic traffic policies across the public and private layers, I established a custom three-tier routing matrix. This completely segregates ingress and egress data streams.
+
+#### Architectural Rationale & Design Philosophy
+The separation of subnets into distinct public and private route tables is driven by the core cloud security principle of **Network Segmentation and Least Privilege Access**:
+
+* **Why Public Subnets and the Internet Gateway (IGW) share a Route Table:** The Public Route Table acts as our edge transit layer. An IGW is a bi-directional gateway; it allows resources with public IPs to be reached from the outside internet and vice-versa. By mapping only the public subnets to the IGW via `0.0.0.0/0`, we create a designated demilitarized zone (DMZ). Only public-facing infrastructure (like our Application Load Balancer) resides here to intercept, inspect, and filter incoming traffic.
+  
+* **Why Private Subnets map strictly to NAT Gateways in Private Route Tables:** Our core application business logic and servers are highly sensitive and should never accept uninitiated inbound connections from the public internet. However, these servers still require *outbound-only* access to download security patches, fetch third-party API payloads, or pull container images. 
+  
+  By mapping the private subnets to a **NAT Gateway**, we achieve asymmetric network isolation. A NAT Gateway operates as a one-way proxy: it translates the private IP addresses of our compute instances into a single public Elastic IP to send requests out, but securely discards any unsolicited inbound traffic trying to sneak backward through that same path. Decoupling this into independent route tables per zone (`Private-RT-A` and `Private-RT-B`) ensures that a failure or configuration error in one zone's egress path cannot ripple across and cause a complete cascading cluster failure.
+
+---
+
+#### A. Edge Ingress Layer (`Public-RT`)
+* **Route Table ID:** `rtb-0c053ed9d5662096d`
+* **Network Target:** Attached directly to the Internet Gateway (`Prod-IGW` | `igw-059b4afb68b3b2f84`) via a default route destination (`0.0.0.0/0`).
+* **Explicit Subnet Associations:** Explicitly mapped to `public-subnet-1a` and `public-subnet-1b`.
+
+![Public Route Table Subnet Associations](images/public-rt-associations.png)
+![Public Route Table Routing Policy](images/public-rt-routes.png)
+
+#### B. Isolated Egress Compute Layer - Zone A (`Private-RT-A`)
+* **Route Table ID:** `rtb-084212f8d058552f6`
+* **Network Target:** Routes all outbound internet requests (`0.0.0.0/0`) locally through `NAT-GW-AZ-A` (`nat-0f87fad6839f087ac`).
+* **Explicit Subnet Association:** Mapped strictly to `private-subnet-1a`.
+
+![Private Route Table A Routing Policy](images/private-rta-routes.png)
+![Private Route Table A Subnet Associations](images/private-rta-associations.png)
+
+#### C. Isolated Egress Compute Layer - Zone B (`Private-RT-B`)
+* **Route Table ID:** `rtb-0feb45120ca0074c2`
+* **Network Target:** Routes all outbound internet requests (`0.0.0.0/0`) locally through `NAT-GW-AZ-B` (`nat-0a7ef701f461e0a7e`).
+* **Explicit Subnet Association:** Mapped strictly to `private-subnet-1b`.
+
+![Private Route Table B Routing Policy](images/private-rtb-routes.png)
+![Private Route Table B Subnet Associations](images/private-rtb-associations.png)
+
+**Architectural Value Added:**
+This configuration ensures that both compute zones remain strictly isolated from direct inbound connection attempts. By decoupling the private routing targets, the infrastructure remains fully operational and fault-isolated—if one NAT Gateway suffers an outage, the secondary availability zone's routing topology remains completely unaffected.
