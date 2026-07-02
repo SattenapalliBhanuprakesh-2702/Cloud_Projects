@@ -145,3 +145,37 @@ The separation of subnets into distinct public and private route tables is drive
 
 **Architectural Value Added:**
 This configuration ensures that both compute zones remain strictly isolated from direct inbound connection attempts. By decoupling the private routing targets, the infrastructure remains fully operational and fault-isolated—if one NAT Gateway suffers an outage, the secondary availability zone's routing topology remains completely unaffected.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+### 6. Stateful Firewall Configuration (Security Groups)
+To enforce micro-segmentation and implement a robust "Defense-in-Depth" mechanism, I established two distinct, stateful layers of security control using AWS Security Groups.
+
+#### A. Perimeter Ingress Layer (`ALB-SG`)
+* **Security Group ID:** `sg-040e19758d8f88634`
+* **Purpose:** Acts as the public-facing firewall for the Application Load Balancer.
+* **Inbound Rules Configured:**
+  * **HTTP (Port 80):** Allowed from any source (`0.0.0.0/0`) to accept initial public web requests.
+  * **HTTPS (Port 443):** Allowed from any source (`0.0.0.0/0`) to support secure, encrypted SSL/TLS traffic.
+  * **SSH (Port 22):** Open to allow remote command-line administration.
+
+![Application Load Balancer Security Group](images/alb-security-group.png)
+
+#### B. Application Isolation Layer (`Server-SG`)
+* **Security Group ID:** `sg-02b2f4c2feda20ab2`
+* **Purpose:** Restricts network access to the application servers running in the private subnets.
+* **Inbound Rules Configured:**
+  * **HTTP (Port 80):** Configured to handle standard application tier communication.
+  * **HTTPS (Port 443):** Open for secure transport protocols.
+  * **SSH (Port 22):** Enabled to support secure shell access for backend maintenance.
+
+![Backend Server Security Group](images/server-security-group.png)
+
+---
+
+### 🚨 Architectural Optimization Note: Implementing Least Privilege
+While the current setup allows basic connectivity, a production-grade infrastructure should optimize the **`Server-SG`** rules to restrict exposure:
+
+Instead of leaving the source fields open to the public internet for the backend servers, the **HTTP (Port 80)** and **HTTPS (Port 443)** inbound sources on `Server-SG` should be explicitly locked down to **only accept traffic originating from the `ALB-SG` ID (`sg-040e19758d8f88634`)**. 
+
+Similarly, **SSH (Port 22)** should ideally be restricted to a specific administrator IP or routed via a Bastion Host / AWS Systems Manager (SSM) Session Manager. This ensures that even though the servers are already hidden in private subnets, they structurally reject any traffic that did not pass through the Load Balancer first, minimizing the lateral attack surface.
