@@ -148,7 +148,7 @@ This configuration ensures that both compute zones remain strictly isolated from
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
-### 7. Automated Compute Fleets via Launch Templates & Auto Scaling Groups
+### 6. Automated Compute Fleets via Launch Templates & Auto Scaling Groups
 To achieve true system elasticity and ensure our web application tier is highly available and resilient against instance degradation, I implemented an automated compute management lifecycle strategy.
 
 #### A. Standardized Server Blueprint (`Launch Template`)
