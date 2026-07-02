@@ -70,3 +70,17 @@ To establish strict network boundaries and high availability, I partitioned the 
 Each tier utilizes a `/24` subnet mask, allocating up to 251 usable IP addresses per subnet (accounting for AWS's 5 reserved internal IPs). This provides an optimal balance between minimizing address wastage and ensuring enough network capacity for auto-scaling events within our private runtime layer.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
+
+### 3. Internet Gateway (IGW) Provisioning & VPC Attachment
+* **Resource Configured:** `Prod-IGW`
+* **Internet Gateway ID:** `igw-059b4afb68b3b2f84`
+* **Status:** `Attached` to `Prod-VPC` (`vpc-018e4178356e21c7`)
+
+To allow bi-directional internet communication for public-facing edge components (such as our Application Load Balancer), I provisioned an AWS Internet Gateway named **Prod-IGW**. I then attached it directly to our custom **Prod-VPC**. 
+
+![Internet Gateway Configuration](images/internet-gateway.png)
+
+**Architectural Role:**
+The Internet Gateway serves as a highly available, horizontally scaled, and redundant entry/exit point for our VPC network. It functions as a target in our public route tables, allowing public resources to map their public IPv4 addresses to AWS network interface cards seamlessly, while performing necessary network address translation (NAT) safely at the cloud boundary.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
