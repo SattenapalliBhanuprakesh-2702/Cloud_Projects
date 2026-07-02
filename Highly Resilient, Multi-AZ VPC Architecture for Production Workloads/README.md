@@ -148,34 +148,44 @@ This configuration ensures that both compute zones remain strictly isolated from
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
-### 6. Stateful Firewall Configuration (Security Groups)
-To enforce micro-segmentation and implement a robust "Defense-in-Depth" mechanism, I established two distinct, stateful layers of security control using AWS Security Groups.
+### 7. Automated Compute Fleets via Launch Templates & Auto Scaling Groups
+To achieve true system elasticity and ensure our web application tier is highly available and resilient against instance degradation, I implemented an automated compute management lifecycle strategy.
 
-#### A. Perimeter Ingress Layer (`ALB-SG`)
-* **Security Group ID:** `sg-040e19758d8f88634`
-* **Purpose:** Acts as the public-facing firewall for the Application Load Balancer.
-* **Inbound Rules Configured:**
-  * **HTTP (Port 80):** Allowed from any source (`0.0.0.0/0`) to accept initial public web requests.
-  * **HTTPS (Port 443):** Allowed from any source (`0.0.0.0/0`) to support secure, encrypted SSL/TLS traffic.
-  * **SSH (Port 22):** Open to allow remote command-line administration.
+#### A. Standardized Server Blueprint (`Launch Template`)
+* **Template Name:** `AWS-prod-example`
+* **Template ID:** `lt-0aba4033449ecbbe2`
+* **Configuration Parameters:**
+  * **Instance Type:** `t3.micro` (Balancing burstable performance requirements with optimized compute costs).
+  * **Amazon Machine Image (AMI):** `ami-0f8a61b66d1accaee`
+  * **Key Pair:** `aws-prod-key-pair` (Assigned for secure cryptographic SSH administrative access).
+  * **Security Group Associated:** `sg-08f4e9860f8b78909`
 
-![Application Load Balancer Security Group](images/alb-security-group.png)
+![EC2 Launch Template Configuration](images/launch-template.png)
 
-#### B. Application Isolation Layer (`Server-SG`)
-* **Security Group ID:** `sg-02b2f4c2feda20ab2`
-* **Purpose:** Restricts network access to the application servers running in the private subnets.
-* **Inbound Rules Configured:**
-  * **HTTP (Port 80):** Configured to handle standard application tier communication.
-  * **HTTPS (Port 443):** Open for secure transport protocols.
-  * **SSH (Port 22):** Enabled to support secure shell access for backend maintenance.
+#### B. Dynamic Fleet Orchestration (`Auto Scaling Group`)
+* **ASG Name:** `aws-prod-autoscaling-group`
+* **Status:** `At desired capacity` (Fleet successfully initialized).
+* **Capacity Sizing Dimensions:**
+  * **Desired Capacity:** 2 Instances
+  * **Minimum Boundary:** 2 Instances
+  * **Maximum Scaling Boundary:** 4 Instances
 
-![Backend Server Security Group](images/server-security-group.png)
+![Auto Scaling Group Capacity Overview](images/autoscaling-group.png)
+
+#### C. Operational Compute Runtime Runtime Layer
+* **Instance Fleet Active Deployment Count:** 2 Running Instances
+* **Fault-Tolerant Distribution Verification:**
+  * `i-074c53d3d62b2263a` -> Successfully deployed into Availability Zone **`us-east-1a`**.
+  * `i-054b5796ba0ad2fb` -> Successfully deployed into Availability Zone **`us-east-1b`**.
+* **Public IPv4 DNS Status:** Completely `Disabled` (Confirming successful structural isolation within the private subnets).
+
+![Active Multi-AZ EC2 Instances](images/ec2-instances-running.png)
 
 ---
 
-### 🚨 Architectural Optimization Note: Implementing Least Privilege
-While the current setup allows basic connectivity, a production-grade infrastructure should optimize the **`Server-SG`** rules to restrict exposure:
+### 🧠 Architectural Verification & Design Patterns Met
+1. **Immutable Infrastructure Blueprint:** By leveraging an EC2 Launch Template instead of manually spinning up virtual machines, I ensured that every new instance introduced to the cluster is configuration-identical. This eliminates configuration drift across environments.
+2. **Symmetric High Availability (HA):** As captured in the runtime screenshot, the Auto Scaling Group successfully split the workload perfectly across two independent data centers (`us-east-1a` and `us-east-1b`). If an entire availability zone encounters a physical hardware failure, the ASG will instantly recognize the loss of heartbeats and dynamically spin up replacement instances in the surviving zone to maintain the desired threshold.
+3. **True Network Isolation:** The instance fleet dashboard confirms that these compute servers have no public IP addresses or public DNS endpoints assigned. They are fully secured behind our private subnet tier, relying strictly on our NAT Gateways for egress patch management and looking ahead to receive user traffic solely via the Application Load Balancer.
 
-Instead of leaving the source fields open to the public internet for the backend servers, the **HTTP (Port 80)** and **HTTPS (Port 443)** inbound sources on `Server-SG` should be explicitly locked down to **only accept traffic originating from the `ALB-SG` ID (`sg-040e19758d8f88634`)**. 
-
-Similarly, **SSH (Port 22)** should ideally be restricted to a specific administrator IP or routed via a Bastion Host / AWS Systems Manager (SSM) Session Manager. This ensures that even though the servers are already hidden in private subnets, they structurally reject any traffic that did not pass through the Load Balancer first, minimizing the lateral attack surface.
+----------------------------------------------------------------------------------------------------------------------------------------------
