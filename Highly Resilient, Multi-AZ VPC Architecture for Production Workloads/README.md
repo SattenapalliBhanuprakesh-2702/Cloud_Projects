@@ -37,6 +37,7 @@ Below is the visual blueprint of the infrastructure I designed:
   * **Scalability:** The ASG dynamically launches or terminates instances based on traffic demand, ensuring performance stability while optimizing infrastructure costs.
 * **Security Groups (Stateful Firewalls):** I implemented strict firewall rules. The application servers are locked down to reject all direct internet traffic—they exclusively accept inbound traffic originating from the ALB’s designated security group.
 
+----------------------------------------------------------------------------------------------------------------------------------------------
 
 ### 1. Production Virtual Private Cloud (VPC) Provisioning
 * **Resource Configured:** `Prod-VPC`
@@ -50,3 +51,22 @@ To build the foundation of this isolated infrastructure, I provisioned a dedicat
 **Key Configuration Details:**
 * **DNS Settings:** I explicitly verified that **DNS Resolution** is `Enabled` to ensure resources inside the network can resolve AWS service endpoints smoothly.
 * **Tenancy:** Left at `Default` to run workloads on shared, cost-effective physical hardware while maintaining logical isolation at the software layer.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+### 2. Multi-AZ Subnet Segmentation
+To establish strict network boundaries and high availability, I partitioned the VPC's IP allocation into four distinct subnets distributed symmetrically across two Availability Zones (`us-east-1a` and `us-east-1b`).
+
+* **Public Web Tier (Ingress):**
+  * `public-subnet-1a` | ID: `subnet-04e075486b3671cd8` | CIDR: `10.0.1.0/24`
+  * `public-subnet-1b` | ID: `subnet-07192e179b75c499c` | CIDR: `10.0.2.0/24`
+* **Private Application Tier (Compute Workloads):**
+  * `private-subnet-1a` | ID: `subnet-05f65a8e70585deb9` | CIDR: `10.0.11.0/24`
+  * `private-subnet-1b` | ID: `subnet-03ca1022b3062d664` | CIDR: `10.0.12.0/24`
+
+![VPC Subnets Configuration](images/subnets.png)
+
+**Architectural Sizing Decisions:**
+Each tier utilizes a `/24` subnet mask, allocating up to 251 usable IP addresses per subnet (accounting for AWS's 5 reserved internal IPs). This provides an optimal balance between minimizing address wastage and ensuring enough network capacity for auto-scaling events within our private runtime layer.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
