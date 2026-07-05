@@ -68,3 +68,20 @@ To enforce tight network isolation, the `two-tier-vpc` was segmented into four d
 #### ⚙️ Engineering Implementation Details:
 * **Public Subnets (`10.0.1.0/24` & `10.0.2.0/24`):** Configured with `MapPublicIpOnLaunch` set to **True** (Enable auto-assign public IP address). This allows the Application Load Balancer endpoints to obtain valid public IPv4 addresses for internet-facing routing.
 * **Private Subnets (`10.0.11.0/24` & `10.0.12.0/24`):** Kept with `MapPublicIpOnLaunch` set to **False** (Disable auto-assign public IP address). This creates a strict security boundary by ensuring that no resources provisioned within this database layer are reachable or viewable from external networks.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+### 🌐 Edge Routing: Internet Gateway Provisioning
+
+An Internet Gateway (IGW) was created and attached to the virtual network edge to facilitate bi-directional internet routing for public-facing assets (such as the Application Load Balancer).
+
+#### ⚙️ Gateway Implementation details:
+* **Internet Gateway Name:** `two-tier-ig`
+* **Internet Gateway ID:** `igw-04e80a16a0a994c54`
+* **Operational State:** **Attached**
+* **Target VPC Link:** `vpc-0bc429a390f01a23a | two-tier-vpc`
+
+![Internet Gateway Configuration](./images/ig.png)
+
+#### 📝 Implementation Notes:
+The gateway acts as the critical edge device enabling external public HTTP/S traffic to cross the boundary into our configured public subnets. Resources within the private subnets remain shielded from this gateway via isolated route tables, maintaining zero inbound path exposure from the public web.
