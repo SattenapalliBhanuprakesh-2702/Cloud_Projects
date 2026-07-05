@@ -150,3 +150,33 @@ The two database subnets were explicitly bound to this private route table to gu
 ![Private Subnet Associations](./images/private-rt-subnets.png)
 
 > 🔒 **Architectural Security Verification:** Because there is **no route to 0.0.0.0/0 via an Internet Gateway (`igw-xxxx`)** or public edge interface, this database layer is 100% air-gapped from direct external vectors. Communication to this tier is only possible internally from authorized resources within the VPC boundary (via the Web SG layer).
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+### 🛡️ State-Level Firewalling: Web Security Group Configuration
+
+To regulate ingress and egress boundaries for the application tier, a custom stateful firewall rule set named `WEB-SG` was established. This ensures public web traffic can interact with our frontend interfaces while securing administrative access protocols.
+
+#### ⚙️ Security Group Overview:
+* **Security Group Name:** `WEB-SG`
+* **Security Group ID:** `sg-0568fc4c8e96d4ee3`
+* **Target VPC Link:** `vpc-0bc429a390f01a23a`
+
+---
+
+### 📥 Inbound Traffic Control Policies (Ingress)
+The security perimeter was hardened by allowing web traffic from any destination while completely locking down administrative access to a single authoritative operator workstation.
+
+| Rule ID | Protocol | Port Range | Source | Traffic Type / Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `sgr-034762da133810aef` | `TCP` | `80` | `0.0.0.0/0` | **HTTP:** Web ingress allowed from anywhere on IPv4 |
+| `sgr-062e7f8025e3cb7b3` | `TCP` | `443` | `0.0.0.0/0` | **HTTPS:** Secure web ingress allowed from anywhere on IPv4 |
+| `sgr-0aaf312d1621fb395` | `TCP` | `22` | `106.215.170.187/32` | **SSH:** Restricted administrative access mapping strictly to the administrator's explicit public IP |
+
+![Web Security Group Inbound Configuration](./images/web-sg.png)
+
+---
+
+### 📤 Outbound Traffic Control Policies (Egress)
+* **Outbound Rule Count:** `1 Permission entry`
+* **Configuration Policy:** The outbound rules layer is maintained at the default **All Traffic (`0.0.0.0/0`)** baseline. This allows active compute nodes to communicate freely with internal AWS endpoints, retrieve external library dependencies, and perform package tracking updates securely.
