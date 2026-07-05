@@ -33,3 +33,19 @@ This layer isolates critical backend storage from direct internet exposure while
 ### ⚡ Principle of Least Privilege
 *   **Network Segregation:** Traffic cannot bypass the Application Load Balancer to hit the EC2 instances directly, and the database tier completely rejects any communication not initiated by the application nodes.
 *   **Structural Redundancy:** By splitting resources across distinct geographical Availability Zones, the architecture guarantees minimal downtime and eliminates single points of failure (SPOFs).
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+## 🌐 Phase 1: Networking & Security Infrastructure
+
+### 🗺️ Virtual Private Cloud (VPC) Initialization
+The foundational network layer was established by provisioning a custom Virtual Private Cloud (VPC) named `two-tier-vpc`. This isolated network boundary hosts the entire compute and database fleet.
+
+#### ⚙️ Core VPC Configurations:
+* **VPC ID:** `vpc-0bc429a390f01a23a`
+* **IPv4 CIDR Block:** `10.0.0.0/16` (Provides `65,536` available private IP addresses for scalable subnetting)
+* **DNS Settings:** `DNS resolution` has been explicitly **Enabled** to ensure internal AWS service endpoints can resolve seamlessly.
+* **Tenancy:** Configured as **Default** to run on shared hardware, optimizing cost efficiency.
+
+![VPC Dashboard Configuration](.images/vpc.png)
+
+----------------------------------------------------------------------------------------------------------------------------------------------
