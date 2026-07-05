@@ -318,3 +318,30 @@ The logical group establishes traffic patterns and protocol handshakes required 
 > 💡 **Architectural Best Practice Check:** Provisioning an independent Target Group decoupled from the Load Balancer infrastructure ensures that your backend Auto Scaling fleet can register and deregister on the fly without breaking external connection interfaces or disrupting user sessions.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
+
+### ⚖️ Application Load Balancer (ALB) Deployment
+
+To orchestrate intelligent web traffic distribution and achieve fault tolerance at our network edge, an Application Load Balancer was provisioned. This component acts as the public-facing inverse proxy, intercepting raw internet requests and balancing them across the underlying multi-AZ web servers.
+
+#### ⚙️ Load Balancer Core Details:
+* **Load Balancer Name:** `two-tier-lb`
+* **Load Balancer Type:** `Application` (Layer 7 routing traffic engine based on HTTP/HTTPS metrics)
+* **Scheme:** `Internet-facing` (Allocates a publicly discoverable DNS entry point for client routing)
+* **Load Balancer ARN:** `arn:aws:elasticloadbalancing:us-east-1:158018604785:loadbalancer/app/two-tier-l/b642dba4a2d7f6b96`
+* **VPC Association Link:** `vpc-0bc429a390f01a23a`
+
+---
+
+### 🗺️ Network Mapping & Public Accessibility Configuration
+The load balancer is strategically integrated across public subnets to satisfy high availability and traffic routing specifications:
+
+* **Availability Zone 1 (us-east-1a):** Bound to `public-subnet-1a` (`subnet-09eae50295f40d4e4`), utilizing the explicit `use1-az1` region zone identifier.
+* **Availability Zone 2 (us-east-1b):** Bound to `public-subnet-1b` (`subnet-025173b470af3d709`), utilizing the explicit `use1-az2` region zone identifier.
+* **Public DNS Canonical Entry Name:** `two-tier-lb-305595766.us-east-1.elb.amazonaws.com` (Serves as the root routing URL alias for end-user browser testing).
+* **Security Layer Binding:** Associated explicitly with `WEB-SG` to enforce stateful port mapping limitations (**HTTP 80** and **HTTPS 443** entries allowed globally).
+
+![Application Load Balancer Configuration](./images/load-balancer.png)
+
+> 💡 **Architectural Best Practice Check:** Spanning an Internet-facing Application Load Balancer across multiple independent Availability Zones guarantees edge infrastructure uptime. In the event that a localized AWS data center experiences an operational failure, the load balancer shifts traffic automatically to ensure undisrupted application access.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
