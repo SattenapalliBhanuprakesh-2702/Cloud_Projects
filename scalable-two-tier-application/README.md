@@ -240,3 +240,29 @@ The group bundles our explicitly isolated private subnets across target Availabi
 > 💡 **Architectural Best Practice Check:** By grouping exclusively private subnets with no direct internet pathways, we establish a robust perimeter layer. Amazon RDS uses this group configuration to guarantee your backend database instances are never accidentally provisioned inside an internet-facing public subnet.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
+
+### 🗄️ Amazon RDS Instance Provisioning
+
+The database engine was successfully provisioned using Amazon Relational Database Service (RDS), creating an isolated, production-ready relational data layer.
+
+#### ⚙️ Database Engine & Instance Core Metrics:
+* **DB Identifier:** `database-1`
+* **Database Engine:** `MySQL Community` (Open-source relational database management system)
+* **Instance Class:** `db.t4g.micro` (Powered by AWS Graviton2 processors, optimized for cost-efficient compute performance)
+* **Status:** **Available**
+* **Deployment Region & Primary AZ:** `us-east-1a` (North Virginia)
+
+---
+
+### 🛡️ Connectivity, Security & High Availability Controls
+
+To secure storage data and eliminate infrastructure single points of failure, structural security group attachments and failover strategies were fully applied:
+
+* **Security Group Binding:** Attached explicitly to `DB-SG` (`sg-0a73b5077a6cd752b`). This ensures that inbound traffic can only reach this database on port 3306 if it is initiated directly from the authorized compute tier running inside `WEB-SG`.
+* **Multi-AZ High Availability Deployment:** Enabled the Multi-Availability Zone deployment capability. The database primary writer instance runs in **us-east-1a**, while a secondary standby node is actively synchronized in **us-east-1b** for automatic failover protection.
+* **Internet Access Gateway Control:** Explicitly set to **Disabled**. This ensures that the database does not receive a public IP address, confirming it cannot be bypassed or discovered from outside the local VPC network boundary.
+* **IAM Authentication:** **Disabled** (Traditional native MySQL credential authentication protocol active for application logic pooling).
+
+![Amazon RDS Database Configuration](./images/database.png)
+
+----------------------------------------------------------------------------------------------------------------------------------------------
