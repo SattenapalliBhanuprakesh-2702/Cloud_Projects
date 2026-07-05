@@ -106,7 +106,7 @@ To enable active communication with external clients, a default static route poi
 | `10.0.0.0/16` | `local` | **Active** | No | Internal VPC routing for all subnets |
 | `0.0.0.0/0` | `igw-04e80a16a0a994c54` | **Active** | No | Default gateway route out to the public Internet via `two-tier-ig` |
 
-![Public Route Table Rules Configuration](public-rt-ig.png)
+![Public Route Table Rules Configuration](./images/public-rt-ig.png)
 
 ---
 
@@ -116,6 +116,6 @@ The two public subnets mapped out in the IP planning phase were explicitly bound
 * **Associated Subnet 1:** `public-subnet-1a` (`subnet-09eae50295f40d4e4`) — **CIDR:** `10.0.1.0/24`
 * **Associated Subnet 2:** `public-subnet-1b` (`subnet-025173b470af3d709`) — **CIDR:** `10.0.2.0/24`
 
-![Public Subnet Associations](public-rt-subnet.png)
+![Public Subnet Associations](./images/public-rt-subnet.png)
 
 > 💡 **Architectural Isolation Note:** Because only the public subnets are associated here, our private database subnets remain entirely detached from this table. With no route targeting `0.0.0.0/0` via an Internet Gateway, the database tier is locked down securely against inbound threats from the public internet.
