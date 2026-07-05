@@ -119,3 +119,34 @@ The two public subnets mapped out in the IP planning phase were explicitly bound
 ![Public Subnet Associations](./images/public-rt-subnet.png)
 
 > 💡 **Architectural Isolation Note:** Because only the public subnets are associated here, our private database subnets remain entirely detached from this table. With no route targeting `0.0.0.0/0` via an Internet Gateway, the database tier is locked down securely against inbound threats from the public internet.
+
+### 🔏 Private Routing Matrix & Network Isolation
+
+To finalize the networking topology, a dedicated private route table named `private-rt` was provisioned. This table enforces absolute isolation for the backend database assets by intentionally omitting an outbound edge route to the Internet Gateway.
+
+#### ⚙️ Route Table Overview:
+* **Route Table ID:** `rtb-067a827eb696572ab`
+* **Target VPC Link:** `vpc-0bc429a390f01a23a | two-tier-vpc`
+
+---
+
+### 🗺️ 1. Isolated Network Routing Entry Rules
+The routing engine contains exclusively a local communication block, preventing any resources inside the attached subnets from routing out to or receiving connections from the public web.
+
+| Destination | Target | Status | Propagated | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `10.0.0.0/16` | `local` | **Active** | No | Internal VPC routing limited strictly to internal subnets |
+
+![Private Route Table Rules Configuration](./images/private-rt.png)
+
+---
+
+### 🔗 2. Private Subnet Associations
+The two database subnets were explicitly bound to this private route table to guarantee that their compute or data assets can never be exposed to external network elements.
+
+* **Associated Subnet 1:** `private-subnet-1a` (`subnet-0ec7218f7587dac14`) — **CIDR:** `10.0.11.0/24`
+* **Associated Subnet 2:** `private-subnet-1b` (`subnet-01579d1af9cf8e451`) — **CIDR:** `10.0.12.0/24`
+
+![Private Subnet Associations](./images/private-rt-subnets.png)
+
+> 🔒 **Architectural Security Verification:** Because there is **no route to 0.0.0.0/0 via an Internet Gateway (`igw-xxxx`)** or public edge interface, this database layer is 100% air-gapped from direct external vectors. Communication to this tier is only possible internally from authorized resources within the VPC boundary (via the Web SG layer).
