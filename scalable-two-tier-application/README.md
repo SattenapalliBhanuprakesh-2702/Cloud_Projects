@@ -180,3 +180,31 @@ The security perimeter was hardened by allowing web traffic from any destination
 ### 📤 Outbound Traffic Control Policies (Egress)
 * **Outbound Rule Count:** `1 Permission entry`
 * **Configuration Policy:** The outbound rules layer is maintained at the default **All Traffic (`0.0.0.0/0`)** baseline. This allows active compute nodes to communicate freely with internal AWS endpoints, retrieve external library dependencies, and perform package tracking updates securely.
+
+
+### 🛡️ Isolation Layer: Database Security Group Configuration
+
+To strictly control ingress communication targeting the database cluster, a custom security group named `DB-SG` was implemented. This layer blocks all public exposure by utilizing stateful security group nesting/chaining policies.
+
+#### ⚙️ Security Group Overview:
+* **Security Group Name:** `DB-SG`
+* **Security Group ID:** `sg-0a73b5077a6cd752b`
+* **Target VPC Link:** `vpc-0bc429a390f01a23a`
+* **Functional Description:** `allow only mysql port 3306`
+
+---
+
+### 📥 Inbound Traffic Control Policies (Ingress Security Chaining)
+The network rule defines zero public access. The data tier completely rejects any direct internet traffic and permits transactions exclusively from compute nodes running within the presentation tier.
+
+| Rule ID | Type / Protocol | Port Range | Source Target | Strategic Implementation |
+| :--- | :--- | :--- | :--- | :--- |
+| `sgr-01cbb7f0f73e769d9` | `MYSQL/Aurora (TCP)` | `3306` | `sg-0568fc4c8e96d4ee3` | **Security Group Chaining:** Grants ingress database traffic permissions *only* to resources actively running within the `WEB-SG` fleet. |
+
+![Database Security Group Inbound Configuration](./images/DB-sg.png)
+
+---
+
+### 📤 Outbound Traffic Control Policies (Egress)
+* **Outbound Rule Count:** `1 Permission entry`
+* **Configuration Policy:** Maintained at the default **All Traffic (`0.0.0.0/0`)** baseline. Because the database subnets lack a routing target out to an Internet Gateway (`igw`), this outbound rule remains completely contained inside the internal local network boundary.
