@@ -266,3 +266,31 @@ To secure storage data and eliminate infrastructure single points of failure, st
 ![Amazon RDS Database Configuration](./images/database.png)
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
+
+---
+
+## 💻 Phase 3: Scalable Compute & Traffic Distribution
+
+### 🚀 EC2 Launch Template Implementation
+To enable automated, predictable, and elastic scaling for the web/application tier, an EC2 Launch Template was provisioned. This template codifies the underlying compute base configuration, ensuring that any new instances spawned by the Auto Scaling Group are identical and pre-configured to handle application traffic.
+
+#### ⚙️ Launch Template Core Details:
+* **Launch Template Name:** `two-tier-launch-template`
+* **Launch Template ID:** `lt-09a5d4cee2419e369`
+* **Default Version:** `1`
+* **Creation Timestamp:** `2026-07-05T05:37:07.000Z`
+
+---
+
+### 🛠️ Configuration Baseline Matrix
+The launch configuration defines the exact system specifications and security boundaries applied to every scale-out event:
+
+* **Amazon Machine Image (AMI):** `ami-06067086cf86c58e6` (Amazon Linux baseline, optimized for secure, high-performance cloud compute workloads).
+* **Security Group Association:** Bound directly to `WEB-SG` (`sg-0568fc4c8e96d4ee3`). This automatically embeds the stateful firewall rules (allowing inbound HTTP/S 80/443 traffic from anywhere and isolating SSH 22 to the administrator's workspace) onto every single instance initialized by this template.
+* **Storage & Network Interfaces:** Maintained at standard defaults to ensure structural optimization and flexible multi-AZ subnet placements.
+
+![EC2 Launch Template Configuration](./images/launch-template.png)
+
+> 💡 **Architectural Best Practice Check:** Utilizing a Launch Template instead of a legacy Launch Configuration follows modern AWS infrastructure guidelines, permitting version tracking and enabling smooth rolling upgrades across the active Auto Scaling Group compute fleet.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
