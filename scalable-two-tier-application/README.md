@@ -440,9 +440,7 @@ SELECT * FROM tasks;
 
 ### 📺 Project Walkthrough Demonstration
 
-<video src="./videos/video.mp4" controls="controls" style="max-width: 100%; height: auto;">
-reference videos
-</video>
+
 ------------------------------------------------------------------------------------------------------------------------------------------
 
 
