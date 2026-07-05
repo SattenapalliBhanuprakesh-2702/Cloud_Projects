@@ -436,8 +436,12 @@ SELECT * FROM tasks;
 
 ![Successful Database Write and Read Validation](./images/instance-2.png)
 
+### 📺 Project Walkthrough Demonstration
+
+![Application Demo](./videos/AWS Two-Tier Demo App - Google Chrome 2026-07-05 12-25-37.mp4)
+
 ------------------------------------------------------------------------------------------------------------------------------------------
----
+
 
 ## 🎯 Project Success Summary
 
