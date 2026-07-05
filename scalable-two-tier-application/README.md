@@ -46,6 +46,6 @@ The foundational network layer was established by provisioning a custom Virtual 
 * **DNS Settings:** `DNS resolution` has been explicitly **Enabled** to ensure internal AWS service endpoints can resolve seamlessly.
 * **Tenancy:** Configured as **Default** to run on shared hardware, optimizing cost efficiency.
 
-![VPC Dashboard Configuration](.images/vpc.png)
+![VPC Dashboard Configuration](./images/vpc.png)
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
