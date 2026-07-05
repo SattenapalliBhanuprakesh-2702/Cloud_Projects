@@ -411,6 +411,32 @@ To guarantee that state persistence functions correctly across the network bound
 
 ![Successful Database Write and Read Validation](./images/output-2.png)
 
+--------------------------------------------------------------------------------------------------------------------------------------------
+Backend Database Engine Verification (CLI Validation)
+
+To definitively cross-verify data tier persistence and confirm stateful relational operations independent of the web frontend dashboard, an administrative session was initiated on an active compute node to query the MySQL engine directly via the command-line interface.
+
+#### Direct Database Connection Workflow:
+
+1. **Client Software Provisioning:** Installed the native MariaDB/MySQL engine client utility packages onto the Amazon Linux instance.
+   ```bash
+   sudo yum install mariadb105 -y
+Remote RDS Tunnel Handshake: Initiated a secure database connection across internal port 3306 targeting the isolated Amazon RDS private endpoint.
+
+Bash
+mysql -h database-1.cqni6i8y2w85.us-east-1.rds.amazonaws.com -u admin -p
+Relational Database State Queries & Output: Once authenticated inside the MySQL engine shell, structural queries were run directly against the transaction tables to confirm schema integrity and data storage replication.
+
+SQL
+USE demo_db;
+SHOW TABLES;
+SELECT * FROM tasks;
+
+![Successful Database Write and Read Validation](./images/instance-1.png)
+
+![Successful Database Write and Read Validation](./images/instance-2.png)
+
+------------------------------------------------------------------------------------------------------------------------------------------
 ---
 
 ## 🎯 Project Success Summary
@@ -420,4 +446,5 @@ By completing this deployment matrix, the following modern architecture patterns
 2. **Zero Ingress Leakage:** The persistent database engine accepts zero direct traffic from the public web, relying entirely on **Security Group Chaining** to lock down resource communication parameters to authorized frontend instances only.
 3. **Elastic High Availability:** The compute layer leverages an automated launch template and an elastic auto-scaling matrix distributed systematically across separate Availability Zones, providing a robust, self-healing framework capable of handling localized data center outages seamlessly.
 
---------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+
