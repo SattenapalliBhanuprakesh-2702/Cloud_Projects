@@ -345,3 +345,42 @@ The load balancer is strategically integrated across public subnets to satisfy h
 > 💡 **Architectural Best Practice Check:** Spanning an Internet-facing Application Load Balancer across multiple independent Availability Zones guarantees edge infrastructure uptime. In the event that a localized AWS data center experiences an operational failure, the load balancer shifts traffic automatically to ensure undisrupted application access.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
+
+### 📈 High Availability Compute Fleet: Auto Scaling Group (ASG) Deployment
+
+To ensure elastic capacity management and self-healing resilience across the application layer, an EC2 Auto Scaling Group was provisioned. This component automates instance lifecycle management, scaling out compute nodes to absorb traffic surges and scaling in dynamically to minimize operational overhead.
+
+#### ⚙️ Auto Scaling Group Core Details:
+* **Auto Scaling Group Name:** `two-tier-auto-scaling`
+* **ARN:** `arn:aws:autoscaling:us-east-1:158018604785:autoScalingGroup:811bb7f7-af93-406c-903b-717f6d102717:autoScalingGroupName/two-tier-auto-scaling`
+* **Current Execution Status:** `At desired capacity` (Operating optimally with zero infrastructure anomalies)
+* **Creation Timestamp:** `Sun Jul 05 2026 11:47:00 GMT+0530 (India Standard Time)`
+
+---
+
+### 🗺️ Capacity Limits & Fleet Topology Management
+The orchestration framework governs compute resource boundaries across a Multi-AZ deployment map to achieve high structural redundancy:
+
+* **Desired Capacity:** `2` (Ensures two web servers are actively handling requests across independent data centers at baseline state)
+* **Minimum Scaling Limit:** `2` (Guarantees zero single-points-of-failure by maintaining structural diversity at all times)
+* **Maximum Scaling Limit:** `3` (Caps peak scale-out triggers to enforce tight budget boundaries while shielding against traffic spikes)
+* **Availability Zone Distribution:** Set to `Balanced best effort`. The compute instances are distributed evenly across:
+  * **us-east-1a (`use1-az1`):** Attached directly to `public-subnet-1a` (`subnet-09eae50295f40d4e4`)
+  * **us-east-1b (`use1-az2`):** Attached directly to `public-subnet-1b` (`subnet-025173b470af3d709`)
+
+![Auto Scaling Group Capacity Overview](./images/auto-scaling-1.png)
+
+---
+
+### 📦 Structural Launch Template Binding
+The orchestration tier references our immutable template schema to reliably stamp out identical, pre-bootstrapped nodes:
+
+* **Target Source Template:** `two-tier-launch-template` (`lt-09a5d4cee2419e369`) using the `Latest` configuration version.
+* **Underlying Engine Platform:** `ami-06067086cf86c58e6` (Amazon Linux).
+* **Assigned Compute Size:** Overridden to `t3.micro` instances (Providing dual vCPUs with Burstable Performance credits).
+* **Administrative Access Control:** Bound to `two-tier-key-pair` to enable encrypted administrative handshakes over SSH if required.
+* **Network Boundary Firewall:** Associated with `sg-0568fc4c8e96d4ee3` (`WEB-SG`) to regulate all ingress web flows.
+
+![Auto Scaling Group Launch Configuration Details](./images/auto-scaling-2.png)
+
+> 💡 **Architectural Best Practice Check:** By pairing the Auto Scaling Group with the Application Load Balancer and registering them to target public subnets, the system gains automated healing capabilities. If an EC2 instance fails an internal HTTP health check, the ASG terminates it immediately and provisions a clean replacement node using the modular script file [`user-data.sh`](./user-data.sh).
