@@ -180,7 +180,7 @@ The security perimeter was hardened by allowing web traffic from any destination
 ### 📤 Outbound Traffic Control Policies (Egress)
 * **Outbound Rule Count:** `1 Permission entry`
 * **Configuration Policy:** The outbound rules layer is maintained at the default **All Traffic (`0.0.0.0/0`)** baseline. This allows active compute nodes to communicate freely with internal AWS endpoints, retrieve external library dependencies, and perform package tracking updates securely.
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 
 ### 🛡️ Isolation Layer: Database Security Group Configuration
 
@@ -208,3 +208,35 @@ The network rule defines zero public access. The data tier completely rejects an
 ### 📤 Outbound Traffic Control Policies (Egress)
 * **Outbound Rule Count:** `1 Permission entry`
 * **Configuration Policy:** Maintained at the default **All Traffic (`0.0.0.0/0`)** baseline. Because the database subnets lack a routing target out to an Internet Gateway (`igw`), this outbound rule remains completely contained inside the internal local network boundary.
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+---
+
+## 🗄️ Phase 2: High Availability Database Provisioning
+
+### 📁 DB Subnet Group Implementation
+To support a Multi-AZ Amazon RDS container layout, a dedicated database subnet group named `subnet-group-two-tier` was created. This group maps logical private subnet boundaries together, giving the RDS engine the infrastructure baseline required to distribute primary and standby storage nodes seamlessly across independent geographic zones.
+
+#### ⚙️ Subnet Group Technical Details:
+* **Subnet Group Name:** `subnet-group-two-tier`
+* **Description:** `group private subnets`
+* **VPC Association ID:** `vpc-0bc429a390f01a23a`
+* **ARN:** `arn:aws:rds:us-east-1:158018604785:subgrp:subnet-group-two-tier`
+* **Supported Network Types:** IPv4
+
+---
+
+### 🗺️ Bound Infrastructure Topology
+The group bundles our explicitly isolated private subnets across target Availability Zones to fulfill high availability disaster recovery prerequisites.
+
+| Availability Zone | Subnet Name | Subnet Resource ID | Assigned CIDR Block | Role Mapping |
+| :--- | :--- | :--- | :--- | :--- |
+| **us-east-1a** | `private-subnet-1a` | `subnet-0ec7218f7587dac14` | `10.0.11.0/24` | Active Primary Node Hosting Space |
+| **us-east-1b** | `private-subnet-1b` | `subnet-01579d1af9cf8e451` | `10.0.12.0/24` | Passive Standby Failover Space |
+
+![DB Subnet Group Configuration](./images/subnet-group.png)
+
+> 💡 **Architectural Best Practice Check:** By grouping exclusively private subnets with no direct internet pathways, we establish a robust perimeter layer. Amazon RDS uses this group configuration to guarantee your backend database instances are never accidentally provisioned inside an internet-facing public subnet.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
