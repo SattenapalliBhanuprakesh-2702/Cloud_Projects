@@ -293,3 +293,28 @@ The launch configuration defines the exact system specifications, structural aut
 > 💡 **Architectural Best Practice Check:** Embedding initialization shell commands within an EC2 Launch Template user data container instead of deploying manual configuration layers satisfies strict Infrastructure-as-Code (IaC) design guidelines. This eliminates standard provisioning friction and guarantees a completely hand-off, auto-scaling deployment model.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
+
+### 🎯 Target Group Configuration
+
+To facilitate intelligent traffic routing for incoming HTTP web queries, a logical target layer named `two-tier-tg` was provisioned. This group acts as the direct destination collection framework utilized by the Application Load Balancer to perform ongoing runtime health checks and pass client traffic down to individual compute targets.
+
+#### ⚙️ Target Group Core Details:
+* **Target Group Name:** `two-tier-tg`
+* **ARN:** `arn:aws:elasticloadbalancing:us-east-1:158018604785:targetgroup/two-tier-tg/d27af3e7b53fb4bf`
+* **Target Type:** `Instance` (Directly tracks EC2 instance state boundaries dynamically scaled by the ASG)
+* **Target VPC Link:** `vpc-0bc429a390f01a23a`
+
+---
+
+### 🗺️ Traffic Routing Rules & Matrix
+The logical group establishes traffic patterns and protocol handshakes required to distribute data down to the presentation web nodes:
+
+* **Inbound Protocol & Routing Port:** Configured to handle standard **HTTP over Port 80** utilizing the baseline **HTTP1** protocol version layout.
+* **IP Address Space Mapping:** Uses **IPv4** addressing mechanisms for standard internal subnet cross-communication routing.
+* **Load Balancer Linkage:** Status currently registers as `None associated` (Pending formal connection to the incoming Application Load Balancer listener logic mapping rules).
+
+![Target Group Configuration](./images/target-group.png)
+
+> 💡 **Architectural Best Practice Check:** Provisioning an independent Target Group decoupled from the Load Balancer infrastructure ensures that your backend Auto Scaling fleet can register and deregister on the fly without breaking external connection interfaces or disrupting user sessions.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
