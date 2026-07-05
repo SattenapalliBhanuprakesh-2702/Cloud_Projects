@@ -438,7 +438,7 @@ SELECT * FROM tasks;
 
 ### 📺 Project Walkthrough Demonstration
 
-![Application Demo](./videos/AWS Two-Tier Demo App - Google Chrome 2026-07-05 12-25-37.mp4)
+![Application Demo](./videos/video.mp4)
 
 ------------------------------------------------------------------------------------------------------------------------------------------
 
