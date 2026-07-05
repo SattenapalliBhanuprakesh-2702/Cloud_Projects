@@ -267,12 +267,9 @@ To secure storage data and eliminate infrastructure single points of failure, st
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
----
+-### 🚀 EC2 Launch Template & Automation Implementation
 
-## 💻 Phase 3: Scalable Compute & Traffic Distribution
-
-### 🚀 EC2 Launch Template Implementation
-To enable automated, predictable, and elastic scaling for the web/application tier, an EC2 Launch Template was provisioned. This template codifies the underlying compute base configuration, ensuring that any new instances spawned by the Auto Scaling Group are identical and pre-configured to handle application traffic.
+To achieve automated, predictable, and elastic scaling for the web/application tier, an EC2 Launch Template was provisioned. This template codifies the underlying compute base configurations and injects a custom runtime initialization blueprint, ensuring that any new instances spawned by the Auto Scaling Group are identical, pre-bootstrapped, and instantly ready to process operational traffic.
 
 #### ⚙️ Launch Template Core Details:
 * **Launch Template Name:** `two-tier-launch-template`
@@ -283,14 +280,16 @@ To enable automated, predictable, and elastic scaling for the web/application ti
 ---
 
 ### 🛠️ Configuration Baseline Matrix
-The launch configuration defines the exact system specifications and security boundaries applied to every scale-out event:
+The launch configuration defines the exact system specifications, structural automation scripts, and stateful security boundaries applied to every dynamic scale-out event:
 
 * **Amazon Machine Image (AMI):** `ami-06067086cf86c58e6` (Amazon Linux baseline, optimized for secure, high-performance cloud compute workloads).
-* **Security Group Association:** Bound directly to `WEB-SG` (`sg-0568fc4c8e96d4ee3`). This automatically embeds the stateful firewall rules (allowing inbound HTTP/S 80/443 traffic from anywhere and isolating SSH 22 to the administrator's workspace) onto every single instance initialized by this template.
+* **Security Group Association:** Bound directly to `WEB-SG` (`sg-0568fc4c8e96d4ee3`). This automatically embeds the stateful firewall rules (allowing public inbound HTTP/S 80/443 traffic and restricting SSH 22 to the administrator's workstation) onto every single provisioned interface.
 * **Storage & Network Interfaces:** Maintained at standard defaults to ensure structural optimization and flexible multi-AZ subnet placements.
+* **Advanced Details (User Data Automation):** Injected an automated Bash bootstrapping script executed with root privileges at instance initialization. This automates dependency provisioning for Apache (`httpd`), the PHP runtime engine, and the MySQLi communications layer (`php-mysqli`), while generating a dynamic, responsive Task Dashboard interface (`index.php`) attached directly to the isolated Amazon RDS database backend.
+  * 📂 *The full initialization script is maintained cleanly inside the repository file:* [`user-data.sh`](./user-data.sh)
 
 ![EC2 Launch Template Configuration](./images/launch-template.png)
 
-> 💡 **Architectural Best Practice Check:** Utilizing a Launch Template instead of a legacy Launch Configuration follows modern AWS infrastructure guidelines, permitting version tracking and enabling smooth rolling upgrades across the active Auto Scaling Group compute fleet.
+> 💡 **Architectural Best Practice Check:** Embedding initialization shell commands within an EC2 Launch Template user data container instead of deploying manual configuration layers satisfies strict Infrastructure-as-Code (IaC) design guidelines. This eliminates standard provisioning friction and guarantees a completely hand-off, auto-scaling deployment model.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
